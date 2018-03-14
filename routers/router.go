@@ -8,23 +8,23 @@
 package routers
 
 import (
+	"github.com/kataras/iris"
 	"github.com/john-deng/k8s-cli-demo/controllers"
+)
 
-	"github.com/astaxie/beego"
+var (
+	App *iris.Application
+	deploymentController controllers.DeploymentController
 )
 
 func init() {
-	ns := beego.NewNamespace("/k8s",
-		beego.NSNamespace("/deployment",
-			beego.NSInclude(
-				&controllers.DeploymentController{},
-			),
-		),
-		beego.NSNamespace("/user",
-			beego.NSInclude(
-				&controllers.UserController{},
-			),
-		),
-	)
-	beego.AddNamespace(ns)
+	App = iris.New()
+
+	deploymentController = controllers.DeploymentController {}
+
+	deploymentRoutes := App.Party("/deployment", deploymentController.Before)
+	{
+		// Method POST: http://localhost:8080/deployment/deploy
+		deploymentRoutes.Post("/deploy", deploymentController.Deploy)
+	}
 }

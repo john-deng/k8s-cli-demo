@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM circleci/golang:1.10
-COPY ./app /go/app
-COPY ./conf /go/conf
+FROM centos:7
+COPY ./app /app
 EXPOSE 8080
-ENTRYPOINT /go/app
+ENTRYPOINT /app

@@ -1,7 +1,7 @@
 package models
 
 import (
-	log "github.com/astaxie/beego/logs"
+	log "github.com/kataras/golog"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +14,7 @@ import (
 type App struct{
 	Name string	`json:"name"`
 	Project string `json:"project"`
+	Profile string `json:"profile"`
 	DockerRegistry string `json:"docker_registry"`
 	ImageTag string `json:"image_tag"`
 	Port int32 `json:"port"`
@@ -33,7 +34,10 @@ func init() {
 
 func int32Ptr(i int32) *int32 { return &i }
 
-
+// @Title Deploy
+// @Description deploy application
+// @Param app
+// @Return deployment result as string, error
 func Deploy(app *App) (string, error)  {
 	deploymentsClient := KubeApi.clientSet.AppsV1beta1().Deployments(app.Project)
 
@@ -42,6 +46,9 @@ func Deploy(app *App) (string, error)  {
 	}
 	if "" == app.DockerRegistry {
 		app.DockerRegistry = "docker-registry.default.svc:5000"
+	}
+	if "" == app.Profile {
+		app.Profile = "dev"
 	}
 
 	deployment := &appsv1beta1.Deployment{
@@ -65,17 +72,13 @@ func Deploy(app *App) (string, error)  {
 								{
 									Name:          "http",
 									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 8080,
+									ContainerPort: app.Port,
 								},
 							},
 							Env: []apiv1.EnvVar{
 								{
-									Name: "KUBERNETES_SERVICE_HOST",
-									Value: "devops.oc.com",
-								},
-								{
-									Name: "KUBERNETES_SERVICE_PORT",
-									Value: "8443",
+									Name: "APP_PROFILES_ACTIVE",
+									Value: app.Profile,
 								},
 							},
 						},
@@ -101,6 +104,7 @@ func Deploy(app *App) (string, error)  {
 
 	return retVal, err
 }
+
 
 func createService(app *App) (*apiv1.Service, error)   {
 	// create service

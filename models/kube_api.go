@@ -10,6 +10,7 @@ import (
 	"os"
 	"flag"
 	"path/filepath"
+	log "github.com/kataras/golog"
 )
 
 var (
@@ -28,6 +29,7 @@ func init() {
 	var err error
 
 	if os.Getenv("KUBE_CLIENT_MODE") == "external" {
+		log.Info("Kubernetes External Client Mode")
 		if home := homedir.HomeDir(); home != "" {
 			KubeApi.kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 		} else {
@@ -38,6 +40,7 @@ func init() {
 			panic(err.Error())
 		}
 	} else {
+		log.Info("Kubernetes Internal Client Mode")
 		KubeApi.config, err = rest.InClusterConfig()
 		if err != nil {
 			panic(err.Error())

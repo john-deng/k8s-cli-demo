@@ -1,18 +1,11 @@
 package main
 
 import (
-	_ "github.com/john-deng/k8s-cli-demo/routers"
-	"github.com/astaxie/beego"
+	"github.com/kataras/iris"
+	"github.com/john-deng/k8s-cli-demo/routers"
 )
 
-func init() {
-
-}
-
 func main() {
-	if beego.BConfig.RunMode == "dev" {
-		beego.BConfig.WebConfig.DirectoryIndex = true
-		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
-	}
-	beego.Run()
+	// Listen for incoming HTTP/1.x & HTTP/2 clients on localhost port 8080.
+	routers.App.Run(iris.Addr(":8080"), iris.WithCharset("UTF-8"), iris.WithoutVersionChecker)
 }
